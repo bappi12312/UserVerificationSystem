@@ -41,10 +41,6 @@ export const votes = pgTable("votes", {
   userId: integer("user_id").notNull().references(() => users.id),
   serverId: integer("server_id").notNull().references(() => servers.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    userServerUnique: primaryKey({ columns: [table.userId, table.serverId] }),
-  };
 });
 
 // Game type schema

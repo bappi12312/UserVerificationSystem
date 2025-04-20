@@ -112,6 +112,7 @@ export class MemStorage implements IStorage {
       id, 
       isVerified: false,
       isAdmin: false,
+      verificationToken: userData.verificationToken || null,
       createdAt: now
     };
     this.users.set(id, user);
@@ -191,11 +192,14 @@ export class MemStorage implements IStorage {
     if (filters.sort) {
       switch (filters.sort) {
         case 'votes':
-          // We'll need to get vote count for each server
-          servers = servers.sort(async (a, b) => {
-            const aVotes = await this.getVoteCount(a.id);
-            const bVotes = await this.getVoteCount(b.id);
-            return bVotes - aVotes;
+          // For votes, we need to sort manually since it requires async
+          // This isn't efficient but works for in-memory storage
+          const voteCountsMap = new Map<number, number>();
+          for (const server of servers) {
+            voteCountsMap.set(server.id, await this.getVoteCount(server.id));
+          }
+          servers = servers.sort((a, b) => {
+            return (voteCountsMap.get(b.id) || 0) - (voteCountsMap.get(a.id) || 0);
           });
           break;
         case 'players':
@@ -410,61 +414,43 @@ export class DatabaseStorage implements IStorage {
     
     const total = Number(countResult?.count) || 0;
     
-    // Build query with conditions
-    let query = db.select().from(servers).where(and(...conditions));
+    // Handle sorting
+    let serverResults: Server[] = [];
     
-    // Apply sorting
-    if (filters.sort) {
-      switch (filters.sort) {
-        case 'votes':
-          // Subquery to get vote counts per server
-          const voteSubquery = db
-            .select({
-              serverId: votes.serverId,
-              voteCount: count(votes.id)
-            })
-            .from(votes)
-            .groupBy(votes.serverId)
-            .as('vote_counts');
-
-          // Join with servers and include vote count
-          query = db
-            .select({
-              ...servers,
-              voteCount: sql`COALESCE(${voteSubquery.voteCount}, 0)`
-            })
-            .from(servers)
-            .leftJoin(voteSubquery, eq(servers.id, voteSubquery.serverId))
-            .where(and(...conditions))
-            .orderBy(desc(sql`COALESCE(${voteSubquery.voteCount}, 0)`));
-          break;
-          
-        case 'players':
-          query = query.orderBy(desc(servers.currentPlayers));
-          break;
-          
-        case 'newest':
-          query = query.orderBy(desc(servers.createdAt));
-          break;
-          
-        case 'name':
-          query = query.orderBy(asc(servers.name));
-          break;
-      }
+    if (filters.sort === 'votes') {
+      // Special handling for vote sorting with a join
+      const results = await db
+        .select({
+          server: servers,
+          voteCount: sql<number>`COUNT(${votes.id})`.as('vote_count')
+        })
+        .from(servers)
+        .leftJoin(votes, eq(servers.id, votes.serverId))
+        .where(and(...conditions))
+        .groupBy(servers.id)
+        .orderBy(desc(sql<number>`COUNT(${votes.id})`))
+        .limit(filters.limit || 10)
+        .offset(((filters.page || 1) - 1) * (filters.limit || 10));
+        
+      serverResults = results.map(r => r.server);
     } else {
-      // Default sort by newest
-      query = query.orderBy(desc(servers.createdAt));
+      // For other sorts, use direct queries
+      const query = db.select()
+        .from(servers)
+        .where(and(...conditions))
+        .limit(filters.limit || 10)
+        .offset(((filters.page || 1) - 1) * (filters.limit || 10));
+      
+      // Apply specific ordering
+      if (filters.sort === 'players') {
+        serverResults = await query.orderBy(desc(servers.currentPlayers));
+      } else if (filters.sort === 'name') {
+        serverResults = await query.orderBy(asc(servers.name));
+      } else {
+        // Default to newest
+        serverResults = await query.orderBy(desc(servers.createdAt));
+      }
     }
-    
-    // Apply pagination
-    const page = filters.page || 1;
-    const limit = filters.limit || 10;
-    const offset = (page - 1) * limit;
-    
-    query = query.limit(limit).offset(offset);
-    
-    // Execute query
-    const serverResults = await query;
     
     return { 
       servers: serverResults, 
