@@ -1,4 +1,6 @@
 import { users, type User, type InsertUser, servers, type Server, type InsertServer, votes, type Vote, type InsertVote, games, type Game, type InsertGame } from "@shared/schema";
+import { db } from './db';
+import { eq, and, like, ilike, asc, desc, sql, count, isNull, or } from 'drizzle-orm';
 
 // Storage interface with CRUD operations
 export interface IStorage {
@@ -303,4 +305,288 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  // User operations
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(
+      sql`LOWER(${users.username}) = LOWER(${username})`
+    );
+    return user;
+  }
+  
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(
+      sql`LOWER(${users.email}) = LOWER(${email})`
+    );
+    return user;
+  }
+  
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.verificationToken, token));
+    return user;
+  }
+
+  async createUser(userData: InsertUser & { verificationToken?: string }): Promise<User> {
+    const [user] = await db.insert(users).values(userData).returning();
+    return user;
+  }
+  
+  async updateUser(id: number, userData: Partial<User>): Promise<User | undefined> {
+    const [user] = await db.update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  // Server operations
+  async getServer(id: number): Promise<Server | undefined> {
+    const [server] = await db.select().from(servers).where(eq(servers.id, id));
+    return server;
+  }
+  
+  async getServersByUser(userId: number): Promise<Server[]> {
+    return await db.select().from(servers).where(eq(servers.userId, userId));
+  }
+  
+  async getServers(filters: {
+    search?: string;
+    game?: string;
+    region?: string;
+    status?: string;
+    sort?: "votes" | "players" | "newest" | "name";
+    isFeatured?: boolean;
+    page?: number;
+    limit?: number;
+  }): Promise<{ servers: Server[]; total: number }> {
+    // Base conditions
+    let conditions = [];
+    
+    // Always show approved servers
+    conditions.push(eq(servers.isApproved, true));
+    
+    // Apply filters
+    if (filters.search) {
+      const searchTerm = `%${filters.search}%`;
+      conditions.push(
+        or(
+          ilike(servers.name, searchTerm),
+          ilike(servers.description, searchTerm),
+          ilike(servers.ip, searchTerm)
+        )
+      );
+    }
+    
+    if (filters.game) {
+      conditions.push(eq(servers.game, filters.game));
+    }
+    
+    if (filters.region) {
+      conditions.push(eq(servers.region, filters.region));
+    }
+    
+    if (filters.status === 'online') {
+      conditions.push(eq(servers.isOnline, true));
+    }
+    
+    if (filters.status === 'featured') {
+      conditions.push(eq(servers.isFeatured, true));
+    }
+    
+    if (filters.isFeatured !== undefined) {
+      conditions.push(eq(servers.isFeatured, filters.isFeatured));
+    }
+    
+    // Count total
+    const [countResult] = await db
+      .select({ count: count() })
+      .from(servers)
+      .where(and(...conditions));
+    
+    const total = Number(countResult?.count) || 0;
+    
+    // Build query with conditions
+    let query = db.select().from(servers).where(and(...conditions));
+    
+    // Apply sorting
+    if (filters.sort) {
+      switch (filters.sort) {
+        case 'votes':
+          // Subquery to get vote counts per server
+          const voteSubquery = db
+            .select({
+              serverId: votes.serverId,
+              voteCount: count(votes.id)
+            })
+            .from(votes)
+            .groupBy(votes.serverId)
+            .as('vote_counts');
+
+          // Join with servers and include vote count
+          query = db
+            .select({
+              ...servers,
+              voteCount: sql`COALESCE(${voteSubquery.voteCount}, 0)`
+            })
+            .from(servers)
+            .leftJoin(voteSubquery, eq(servers.id, voteSubquery.serverId))
+            .where(and(...conditions))
+            .orderBy(desc(sql`COALESCE(${voteSubquery.voteCount}, 0)`));
+          break;
+          
+        case 'players':
+          query = query.orderBy(desc(servers.currentPlayers));
+          break;
+          
+        case 'newest':
+          query = query.orderBy(desc(servers.createdAt));
+          break;
+          
+        case 'name':
+          query = query.orderBy(asc(servers.name));
+          break;
+      }
+    } else {
+      // Default sort by newest
+      query = query.orderBy(desc(servers.createdAt));
+    }
+    
+    // Apply pagination
+    const page = filters.page || 1;
+    const limit = filters.limit || 10;
+    const offset = (page - 1) * limit;
+    
+    query = query.limit(limit).offset(offset);
+    
+    // Execute query
+    const serverResults = await query;
+    
+    return { 
+      servers: serverResults, 
+      total 
+    };
+  }
+  
+  async createServer(serverData: InsertServer): Promise<Server> {
+    const [server] = await db.insert(servers).values(serverData).returning();
+    return server;
+  }
+  
+  async updateServer(id: number, serverData: Partial<Server>): Promise<Server | undefined> {
+    // Add lastUpdated timestamp
+    const updatedData = {
+      ...serverData,
+      lastUpdated: new Date()
+    };
+    
+    const [server] = await db.update(servers)
+      .set(updatedData)
+      .where(eq(servers.id, id))
+      .returning();
+    return server;
+  }
+  
+  async deleteServer(id: number): Promise<boolean> {
+    const result = await db.delete(servers).where(eq(servers.id, id));
+    return !!result;
+  }
+  
+  // Vote operations
+  async getVote(userId: number, serverId: number): Promise<Vote | undefined> {
+    const [vote] = await db.select()
+      .from(votes)
+      .where(
+        and(
+          eq(votes.userId, userId),
+          eq(votes.serverId, serverId)
+        )
+      );
+    return vote;
+  }
+  
+  async getVotesByServer(serverId: number): Promise<Vote[]> {
+    return await db.select()
+      .from(votes)
+      .where(eq(votes.serverId, serverId));
+  }
+  
+  async getVoteCount(serverId: number): Promise<number> {
+    const [result] = await db.select({ count: count() })
+      .from(votes)
+      .where(eq(votes.serverId, serverId));
+    return Number(result?.count) || 0;
+  }
+  
+  async createVote(voteData: InsertVote): Promise<Vote> {
+    const [vote] = await db.insert(votes).values(voteData).returning();
+    return vote;
+  }
+  
+  async deleteVote(userId: number, serverId: number): Promise<boolean> {
+    const result = await db.delete(votes)
+      .where(
+        and(
+          eq(votes.userId, userId),
+          eq(votes.serverId, serverId)
+        )
+      );
+    return !!result;
+  }
+  
+  // Game operations
+  async getGames(): Promise<Game[]> {
+    return await db.select().from(games);
+  }
+  
+  async getGame(id: number): Promise<Game | undefined> {
+    const [game] = await db.select().from(games).where(eq(games.id, id));
+    return game;
+  }
+  
+  async getGameByShortName(shortName: string): Promise<Game | undefined> {
+    const [game] = await db.select().from(games).where(eq(games.shortName, shortName));
+    return game;
+  }
+  
+  async createGame(gameData: InsertGame): Promise<Game> {
+    const [game] = await db.insert(games).values(gameData).returning();
+    return game;
+  }
+}
+
+// Initialize the database with default games if they don't exist
+const initializeGames = async () => {
+  const defaultGames: InsertGame[] = [
+    { name: "Counter-Strike 2", shortName: "cs2" },
+    { name: "Minecraft", shortName: "minecraft" },
+    { name: "Rust", shortName: "rust" },
+    { name: "GTA V", shortName: "gta5" },
+    { name: "Valheim", shortName: "valheim" }
+  ];
+
+  try {
+    // Check if games already exist
+    const existingGames = await db.select().from(games);
+    
+    if (existingGames.length === 0) {
+      console.log('Initializing games in database...');
+      await db.insert(games).values(defaultGames);
+      console.log('Default games initialized successfully');
+    }
+  } catch (error) {
+    console.error('Failed to initialize games in database:', error);
+  }
+};
+
+// Initialize the database
+initializeGames().catch(error => {
+  console.error('Failed to initialize database:', error);
+});
+
+// Switch from MemStorage to DatabaseStorage
+export const storage = new DatabaseStorage();

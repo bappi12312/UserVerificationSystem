@@ -1,5 +1,6 @@
 import { pgTable, text, serial, integer, timestamp, boolean, primaryKey } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
+import { relations } from "drizzle-orm";
 import { z } from "zod";
 
 // User schema
@@ -52,6 +53,31 @@ export const games = pgTable("games", {
   name: text("name").notNull().unique(),
   shortName: text("short_name").notNull().unique(),
 });
+
+// Relations
+export const usersRelations = relations(users, ({ many }) => ({
+  servers: many(servers),
+  votes: many(votes),
+}));
+
+export const serversRelations = relations(servers, ({ one, many }) => ({
+  user: one(users, {
+    fields: [servers.userId],
+    references: [users.id],
+  }),
+  votes: many(votes),
+}));
+
+export const votesRelations = relations(votes, ({ one }) => ({
+  user: one(users, {
+    fields: [votes.userId],
+    references: [users.id],
+  }),
+  server: one(servers, {
+    fields: [votes.serverId],
+    references: [servers.id],
+  }),
+}));
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users)
