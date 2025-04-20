@@ -74,22 +74,22 @@ export function Navbar({ user, setShowAuthModal, setAuthModalMode, refetchUser }
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <Link href="/">
-                <span className={`${location === '/' ? 'border-primary text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium cursor-pointer`}>
+                <span className={`${location === '/' ? 'border-primary text-gray-900 dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium cursor-pointer`}>
                   Home
                 </span>
               </Link>
               <Link href="/servers">
-                <span className={`${location === '/servers' ? 'border-primary text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium cursor-pointer`}>
+                <span className={`${location === '/servers' ? 'border-primary text-gray-900 dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium cursor-pointer`}>
                   Servers
                 </span>
               </Link>
               <Link href="/add-server">
-                <span className={`${location === '/add-server' ? 'border-primary text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium cursor-pointer`}>
+                <span className={`${location === '/add-server' ? 'border-primary text-gray-900 dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium cursor-pointer`}>
                   Add Server
                 </span>
               </Link>
               <Link href="/about">
-                <span className={`${location === '/about' ? 'border-primary text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium cursor-pointer`}>
+                <span className={`${location === '/about' ? 'border-primary text-gray-900 dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium cursor-pointer`}>
                   About
                 </span>
               </Link>
@@ -154,45 +154,45 @@ export function Navbar({ user, setShowAuthModal, setAuthModalMode, refetchUser }
 
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="sm:hidden">
+        <div className="sm:hidden dark:bg-gray-900">
           <div className="pt-2 pb-3 space-y-1">
             <Link href="/">
-              <span className={`${location === '/' ? 'bg-indigo-50 border-primary text-primary' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'} block pl-3 pr-4 py-2 border-l-4 text-base font-medium cursor-pointer`}>
+              <span className={`${location === '/' ? 'bg-indigo-50 dark:bg-indigo-900 border-primary text-primary dark:text-primary' : 'border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 hover:text-gray-800 dark:hover:text-gray-300'} block pl-3 pr-4 py-2 border-l-4 text-base font-medium cursor-pointer`}>
                 Home
               </span>
             </Link>
             <Link href="/servers">
-              <span className={`${location === '/servers' ? 'bg-indigo-50 border-primary text-primary' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'} block pl-3 pr-4 py-2 border-l-4 text-base font-medium cursor-pointer`}>
+              <span className={`${location === '/servers' ? 'bg-indigo-50 dark:bg-indigo-900 border-primary text-primary dark:text-primary' : 'border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 hover:text-gray-800 dark:hover:text-gray-300'} block pl-3 pr-4 py-2 border-l-4 text-base font-medium cursor-pointer`}>
                 Servers
               </span>
             </Link>
             <Link href="/add-server">
-              <span className={`${location === '/add-server' ? 'bg-indigo-50 border-primary text-primary' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'} block pl-3 pr-4 py-2 border-l-4 text-base font-medium cursor-pointer`}>
+              <span className={`${location === '/add-server' ? 'bg-indigo-50 dark:bg-indigo-900 border-primary text-primary dark:text-primary' : 'border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 hover:text-gray-800 dark:hover:text-gray-300'} block pl-3 pr-4 py-2 border-l-4 text-base font-medium cursor-pointer`}>
                 Add Server
               </span>
             </Link>
             <Link href="/about">
-              <span className={`${location === '/about' ? 'bg-indigo-50 border-primary text-primary' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'} block pl-3 pr-4 py-2 border-l-4 text-base font-medium cursor-pointer`}>
+              <span className={`${location === '/about' ? 'bg-indigo-50 dark:bg-indigo-900 border-primary text-primary dark:text-primary' : 'border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 hover:text-gray-800 dark:hover:text-gray-300'} block pl-3 pr-4 py-2 border-l-4 text-base font-medium cursor-pointer`}>
                 About
               </span>
             </Link>
           </div>
-          <div className="pt-4 pb-3 border-t border-gray-200">
+          <div className="pt-4 pb-3 border-t border-gray-200 dark:border-gray-700">
             {user ? (
               <div className="space-y-2 px-4">
                 <Link href="/my-servers">
-                  <span className="block text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 py-2 cursor-pointer">
+                  <span className="block text-base font-medium text-gray-600 dark:text-gray-300 hover:text-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-100 py-2 cursor-pointer">
                     My Servers
                   </span>
                 </Link>
                 <Link href="/profile">
-                  <span className="block text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 py-2 cursor-pointer">
+                  <span className="block text-base font-medium text-gray-600 dark:text-gray-300 hover:text-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-100 py-2 cursor-pointer">
                     Profile
                   </span>
                 </Link>
                 {user.isAdmin && (
                   <Link href="/admin-dashboard">
-                    <span className="block text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 py-2 cursor-pointer">
+                    <span className="block text-base font-medium text-gray-600 dark:text-gray-300 hover:text-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-100 py-2 cursor-pointer">
                       Admin Dashboard
                     </span>
                   </Link>
