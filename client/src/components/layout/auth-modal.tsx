@@ -53,7 +53,8 @@ export function AuthModal({ show, onClose, mode, setMode, onAuthenticated }: Aut
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
-      password: ""
+      password: "",
+      rememberMe: false
     }
   });
 
@@ -166,10 +167,26 @@ export function AuthModal({ show, onClose, mode, setMode, onAuthenticated }: Aut
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <Checkbox id="remember-me" disabled={isLoading} />
-                    <label htmlFor="remember-me" className="ml-2 block text-sm text-foreground">
-                      Remember me
-                    </label>
+                    <FormField
+                      control={loginForm.control}
+                      name="rememberMe"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox 
+                              checked={field.value} 
+                              onCheckedChange={field.onChange}
+                              disabled={isLoading}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="text-sm font-normal">
+                              Remember me
+                            </FormLabel>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
                   </div>
                   <div className="text-sm">
                     <a href="#" className="font-medium text-primary hover:text-primary/80 transition-colors">
@@ -180,7 +197,7 @@ export function AuthModal({ show, onClose, mode, setMode, onAuthenticated }: Aut
 
                 <Button 
                   type="submit" 
-                  className="w-full font-medium" 
+                  className="w-full font-medium mt-6" 
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -324,7 +341,7 @@ export function AuthModal({ show, onClose, mode, setMode, onAuthenticated }: Aut
 
                 <Button 
                   type="submit" 
-                  className="w-full font-medium" 
+                  className="w-full font-medium mt-6" 
                   disabled={isLoading}
                 >
                   {isLoading ? (
