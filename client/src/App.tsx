@@ -60,7 +60,7 @@ function App() {
           refetchUser={fetchUser}
         />
         
-        <main className="min-h-screen bg-gray-50">
+        <main className="min-h-screen bg-background dark:bg-gray-900 pt-16">
           <Switch>
             <Route path="/" component={() => <Home onLoginRequired={handleLoginRequired} />} />
             <Route path="/servers" component={() => <ServersPage onLoginRequired={handleLoginRequired} />} />

@@ -14,6 +14,7 @@ import {
 import { queryClient } from '@/lib/queryClient';
 import { apiRequest } from '@/lib/queryClient';
 import { useMobile } from '@/hooks/use-mobile';
+import { ThemeToggle } from './theme-toggle';
 
 interface NavbarProps {
   user: UserProfile | null;
@@ -62,7 +63,7 @@ export function Navbar({ user, setShowAuthModal, setAuthModalMode, refetchUser }
   };
 
   return (
-    <nav className="bg-white shadow">
+    <nav className="bg-background dark:bg-gray-900 shadow fixed top-0 left-0 right-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
@@ -95,6 +96,7 @@ export function Navbar({ user, setShowAuthModal, setAuthModalMode, refetchUser }
             </div>
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
+            <ThemeToggle />
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -142,6 +144,7 @@ export function Navbar({ user, setShowAuthModal, setAuthModalMode, refetchUser }
             )}
           </div>
           <div className="-mr-2 flex items-center sm:hidden">
+            <ThemeToggle />
             <Button variant="ghost" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} size="icon">
               {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>
