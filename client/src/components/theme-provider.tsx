@@ -11,10 +11,12 @@ type ThemeProviderProps = {
 type ThemeProviderState = {
   theme: Theme;
   setTheme: (theme: Theme) => void;
+  resolvedTheme: "dark" | "light"; // Add resolved theme
 };
 
 const initialState: ThemeProviderState = {
   theme: "system",
+  resolvedTheme: "light",
   setTheme: () => null,
 };
 
@@ -29,27 +31,52 @@ export function ThemeProvider({
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
   );
+  const [resolvedTheme, setResolvedTheme] = useState<"dark" | "light">("light");
 
   useEffect(() => {
     const root = window.document.documentElement;
-
     root.classList.remove("light", "dark");
 
+    let newTheme: "light" | "dark" = "light";
+    
     if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
+      newTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
         ? "dark"
         : "light";
-
-      root.classList.add(systemTheme);
-      return;
+    } else {
+      newTheme = theme as "light" | "dark";
     }
+    
+    setResolvedTheme(newTheme);
+    root.classList.add(newTheme);
+    
+    // Set a data attribute for components that need to reference the theme
+    root.setAttribute("data-theme", newTheme);
+  }, [theme]);
 
-    root.classList.add(theme);
+  // Watch for system preference changes
+  useEffect(() => {
+    if (theme !== "system") return;
+    
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    
+    const handleChange = () => {
+      const root = window.document.documentElement;
+      const newTheme = mediaQuery.matches ? "dark" : "light";
+      
+      root.classList.remove("light", "dark");
+      root.classList.add(newTheme);
+      setResolvedTheme(newTheme);
+      root.setAttribute("data-theme", newTheme);
+    };
+    
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
   }, [theme]);
 
   const value = {
     theme,
+    resolvedTheme,
     setTheme: (theme: Theme) => {
       localStorage.setItem(storageKey, theme);
       setTheme(theme);

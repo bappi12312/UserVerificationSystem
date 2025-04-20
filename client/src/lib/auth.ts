@@ -9,24 +9,67 @@ export interface UserProfile {
 }
 
 export async function registerUser(userData: RegisterUser): Promise<{ message: string }> {
-  const res = await apiRequest('POST', '/api/auth/register', userData);
-  return await res.json();
+  try {
+    const res = await apiRequest('POST', '/api/auth/register', userData);
+    
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || 'Registration failed');
+    }
+    
+    return await res.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Registration failed. Please try again.');
+  }
 }
 
 export async function loginUser(credentials: LoginCredentials): Promise<{ message: string; user: UserProfile }> {
-  const res = await apiRequest('POST', '/api/auth/login', credentials);
-  return await res.json();
+  try {
+    const res = await apiRequest('POST', '/api/auth/login', credentials);
+    
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || 'Login failed');
+    }
+    
+    return await res.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Login failed. Please try again.');
+  }
 }
 
 export async function logoutUser(): Promise<{ message: string }> {
-  const res = await apiRequest('POST', '/api/auth/logout');
-  return await res.json();
+  try {
+    const res = await apiRequest('POST', '/api/auth/logout');
+    
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || 'Logout failed');
+    }
+    
+    return await res.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Logout failed. Please try again.');
+  }
 }
 
 export async function getCurrentUser(): Promise<UserProfile | null> {
   try {
     const res = await fetch('/api/auth/me', {
       credentials: 'include',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
     });
     
     if (res.status === 401) {
@@ -45,14 +88,24 @@ export async function getCurrentUser(): Promise<UserProfile | null> {
 }
 
 export async function verifyEmail(token: string): Promise<{ message: string }> {
-  const res = await fetch(`/api/auth/verify-email?token=${token}`, {
-    credentials: 'include',
-  });
-  
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message || 'Failed to verify email');
+  try {
+    const res = await fetch(`/api/auth/verify-email?token=${token}`, {
+      credentials: 'include',
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+    
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || 'Failed to verify email');
+    }
+    
+    return await res.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Email verification failed. Please try again.');
   }
-  
-  return await res.json();
 }

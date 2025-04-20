@@ -25,6 +25,7 @@ import { insertUserSchema, loginSchema } from "@shared/schema";
 import { z } from "zod";
 import { loginUser, registerUser } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 // Extended schemas for validation
 const registerSchema = insertUserSchema.extend({
@@ -71,16 +72,16 @@ export function AuthModal({ show, onClose, mode, setMode, onAuthenticated }: Aut
   const handleLoginSubmit = async (data: z.infer<typeof loginSchema>) => {
     setIsLoading(true);
     try {
-      await loginUser(data);
+      const response = await loginUser(data);
       toast({
         title: "Success",
-        description: "You have been logged in successfully.",
+        description: response.message || "You have been logged in successfully.",
       });
       onAuthenticated();
       onClose();
     } catch (error) {
       toast({
-        title: "Error",
+        title: "Login Failed",
         description: error instanceof Error ? error.message : "Failed to login. Please try again.",
         variant: "destructive",
       });
@@ -92,15 +93,16 @@ export function AuthModal({ show, onClose, mode, setMode, onAuthenticated }: Aut
   const handleRegisterSubmit = async (data: z.infer<typeof registerSchema>) => {
     setIsLoading(true);
     try {
-      await registerUser(data);
+      const response = await registerUser(data);
       toast({
-        title: "Success",
-        description: "Registration successful! Please check your email to verify your account.",
+        title: "Registration Successful",
+        description: response.message || "Registration successful! Please check your email to verify your account.",
       });
       setMode('login');
+      registerForm.reset();
     } catch (error) {
       toast({
-        title: "Error",
+        title: "Registration Failed",
         description: error instanceof Error ? error.message : "Failed to register. Please try again.",
         variant: "destructive",
       });
@@ -110,12 +112,12 @@ export function AuthModal({ show, onClose, mode, setMode, onAuthenticated }: Aut
   };
 
   return (
-    <Dialog open={show} onOpenChange={onClose}>
+    <Dialog open={show} onOpenChange={(open) => !isLoading && onClose()}>
       <DialogContent className="sm:max-w-[425px]">
         {mode === 'login' ? (
           <>
             <DialogHeader>
-              <DialogTitle>Log in to your account</DialogTitle>
+              <DialogTitle className="text-2xl font-bold">Welcome back</DialogTitle>
               <DialogDescription>
                 Enter your credentials to access your account
               </DialogDescription>
@@ -130,7 +132,13 @@ export function AuthModal({ show, onClose, mode, setMode, onAuthenticated }: Aut
                     <FormItem>
                       <FormLabel>Email address</FormLabel>
                       <FormControl>
-                        <Input placeholder="you@example.com" {...field} />
+                        <Input 
+                          placeholder="you@example.com" 
+                          type="email"
+                          autoComplete="email"
+                          disabled={isLoading}
+                          {...field} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -144,7 +152,12 @@ export function AuthModal({ show, onClose, mode, setMode, onAuthenticated }: Aut
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input type="password" {...field} />
+                        <Input 
+                          type="password" 
+                          autoComplete="current-password"
+                          disabled={isLoading}
+                          {...field} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -153,20 +166,29 @@ export function AuthModal({ show, onClose, mode, setMode, onAuthenticated }: Aut
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <Checkbox id="remember-me" />
-                    <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                    <Checkbox id="remember-me" disabled={isLoading} />
+                    <label htmlFor="remember-me" className="ml-2 block text-sm text-foreground">
                       Remember me
                     </label>
                   </div>
                   <div className="text-sm">
-                    <a href="#" className="font-medium text-primary hover:text-indigo-500">
-                      Forgot your password?
+                    <a href="#" className="font-medium text-primary hover:text-primary/80 transition-colors">
+                      Forgot password?
                     </a>
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Logging in..." : "Log in"}
+                <Button 
+                  type="submit" 
+                  className="w-full font-medium" 
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Logging in...
+                    </>
+                  ) : "Log in"}
                 </Button>
               </form>
             </Form>
@@ -174,15 +196,15 @@ export function AuthModal({ show, onClose, mode, setMode, onAuthenticated }: Aut
             <DialogFooter className="flex flex-col gap-2">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
+                  <div className="w-full border-t border-border"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">
+                  <span className="px-2 bg-background text-muted-foreground">
                     Don't have an account?
                   </span>
                 </div>
               </div>
-              <Button variant="outline" onClick={() => setMode('signup')} className="w-full">
+              <Button variant="outline" onClick={() => setMode('signup')} className="w-full" disabled={isLoading}>
                 Sign up
               </Button>
             </DialogFooter>
@@ -190,7 +212,7 @@ export function AuthModal({ show, onClose, mode, setMode, onAuthenticated }: Aut
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle>Create an account</DialogTitle>
+              <DialogTitle className="text-2xl font-bold">Create an account</DialogTitle>
               <DialogDescription>
                 Join our community to submit and vote on servers
               </DialogDescription>
@@ -205,7 +227,12 @@ export function AuthModal({ show, onClose, mode, setMode, onAuthenticated }: Aut
                     <FormItem>
                       <FormLabel>Username</FormLabel>
                       <FormControl>
-                        <Input placeholder="username" {...field} />
+                        <Input 
+                          placeholder="username" 
+                          autoComplete="username"
+                          disabled={isLoading}
+                          {...field} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -219,7 +246,13 @@ export function AuthModal({ show, onClose, mode, setMode, onAuthenticated }: Aut
                     <FormItem>
                       <FormLabel>Email address</FormLabel>
                       <FormControl>
-                        <Input placeholder="you@example.com" {...field} />
+                        <Input 
+                          placeholder="you@example.com" 
+                          type="email"
+                          autoComplete="email"
+                          disabled={isLoading}
+                          {...field} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -233,7 +266,12 @@ export function AuthModal({ show, onClose, mode, setMode, onAuthenticated }: Aut
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input type="password" {...field} />
+                        <Input 
+                          type="password" 
+                          autoComplete="new-password"
+                          disabled={isLoading}
+                          {...field} 
+                        />
                       </FormControl>
                       <FormDescription>
                         Must be at least 6 characters
@@ -250,7 +288,12 @@ export function AuthModal({ show, onClose, mode, setMode, onAuthenticated }: Aut
                     <FormItem>
                       <FormLabel>Confirm Password</FormLabel>
                       <FormControl>
-                        <Input type="password" {...field} />
+                        <Input 
+                          type="password" 
+                          autoComplete="new-password"
+                          disabled={isLoading}
+                          {...field} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -265,12 +308,13 @@ export function AuthModal({ show, onClose, mode, setMode, onAuthenticated }: Aut
                       <FormControl>
                         <Checkbox 
                           checked={field.value} 
-                          onCheckedChange={field.onChange} 
+                          onCheckedChange={field.onChange}
+                          disabled={isLoading}
                         />
                       </FormControl>
                       <div className="space-y-1 leading-none">
-                        <FormLabel>
-                          I agree to the <a href="#" className="font-medium text-primary hover:text-indigo-500">Terms of Service</a> and <a href="#" className="font-medium text-primary hover:text-indigo-500">Privacy Policy</a>
+                        <FormLabel className="text-sm font-normal">
+                          I agree to the <a href="#" className="font-medium text-primary hover:underline">Terms of Service</a> and <a href="#" className="font-medium text-primary hover:underline">Privacy Policy</a>
                         </FormLabel>
                         <FormMessage />
                       </div>
@@ -278,8 +322,17 @@ export function AuthModal({ show, onClose, mode, setMode, onAuthenticated }: Aut
                   )}
                 />
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Signing up..." : "Sign up"}
+                <Button 
+                  type="submit" 
+                  className="w-full font-medium" 
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating account...
+                    </>
+                  ) : "Sign up"}
                 </Button>
               </form>
             </Form>
@@ -287,15 +340,15 @@ export function AuthModal({ show, onClose, mode, setMode, onAuthenticated }: Aut
             <DialogFooter className="flex flex-col gap-2">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
+                  <div className="w-full border-t border-border"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">
+                  <span className="px-2 bg-background text-muted-foreground">
                     Already have an account?
                   </span>
                 </div>
               </div>
-              <Button variant="outline" onClick={() => setMode('login')} className="w-full">
+              <Button variant="outline" onClick={() => setMode('login')} className="w-full" disabled={isLoading}>
                 Log in
               </Button>
             </DialogFooter>
