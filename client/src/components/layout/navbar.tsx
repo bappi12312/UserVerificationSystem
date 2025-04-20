@@ -154,44 +154,44 @@ export function Navbar({ user, setShowAuthModal, setAuthModalMode, refetchUser }
         <div className="sm:hidden">
           <div className="pt-2 pb-3 space-y-1">
             <Link href="/">
-              <a className={`${location === '/' ? 'bg-indigo-50 border-primary text-primary' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'} block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}>
+              <span className={`${location === '/' ? 'bg-indigo-50 border-primary text-primary' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'} block pl-3 pr-4 py-2 border-l-4 text-base font-medium cursor-pointer`}>
                 Home
-              </a>
+              </span>
             </Link>
             <Link href="/servers">
-              <a className={`${location === '/servers' ? 'bg-indigo-50 border-primary text-primary' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'} block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}>
+              <span className={`${location === '/servers' ? 'bg-indigo-50 border-primary text-primary' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'} block pl-3 pr-4 py-2 border-l-4 text-base font-medium cursor-pointer`}>
                 Servers
-              </a>
+              </span>
             </Link>
             <Link href="/add-server">
-              <a className={`${location === '/add-server' ? 'bg-indigo-50 border-primary text-primary' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'} block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}>
+              <span className={`${location === '/add-server' ? 'bg-indigo-50 border-primary text-primary' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'} block pl-3 pr-4 py-2 border-l-4 text-base font-medium cursor-pointer`}>
                 Add Server
-              </a>
+              </span>
             </Link>
             <Link href="/about">
-              <a className={`${location === '/about' ? 'bg-indigo-50 border-primary text-primary' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'} block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}>
+              <span className={`${location === '/about' ? 'bg-indigo-50 border-primary text-primary' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'} block pl-3 pr-4 py-2 border-l-4 text-base font-medium cursor-pointer`}>
                 About
-              </a>
+              </span>
             </Link>
           </div>
           <div className="pt-4 pb-3 border-t border-gray-200">
             {user ? (
               <div className="space-y-2 px-4">
                 <Link href="/my-servers">
-                  <a className="block text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 py-2">
+                  <span className="block text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 py-2 cursor-pointer">
                     My Servers
-                  </a>
+                  </span>
                 </Link>
                 <Link href="/profile">
-                  <a className="block text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 py-2">
+                  <span className="block text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 py-2 cursor-pointer">
                     Profile
-                  </a>
+                  </span>
                 </Link>
                 {user.isAdmin && (
                   <Link href="/admin-dashboard">
-                    <a className="block text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 py-2">
+                    <span className="block text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 py-2 cursor-pointer">
                       Admin Dashboard
-                    </a>
+                    </span>
                   </Link>
                 )}
                 <Button 
