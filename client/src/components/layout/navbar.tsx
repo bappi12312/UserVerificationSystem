@@ -1,5 +1,7 @@
 import { Link, useLocation } from 'wouter';
 import { useState, useEffect } from 'react';
+import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from '@/components/ui/navigation-menu';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { UserProfile } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -75,40 +77,50 @@ export function Navbar({ user, setShowAuthModal, setAuthModalMode, refetchUser }
                 </div>
               </Link>
             </div>
-            <div className="hidden sm:ml-8 sm:flex sm:space-x-6">
-              <Link href="/">
-                <span className={`${location === '/' 
-                  ? 'border-primary text-foreground font-medium' 
-                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground'
-                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm cursor-pointer transition-colors`}>
-                  Home
-                </span>
-              </Link>
-              <Link href="/servers">
-                <span className={`${location === '/servers' 
-                  ? 'border-primary text-foreground font-medium' 
-                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground'
-                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm cursor-pointer transition-colors`}>
-                  Servers
-                </span>
-              </Link>
-              <Link href="/add-server">
-                <span className={`${location === '/add-server' 
-                  ? 'border-primary text-foreground font-medium' 
-                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground'
-                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm cursor-pointer transition-colors`}>
-                  Add Server
-                </span>
-              </Link>
-              <Link href="/about">
-                <span className={`${location === '/about' 
-                  ? 'border-primary text-foreground font-medium' 
-                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground'
-                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm cursor-pointer transition-colors`}>
-                  About
-                </span>
-              </Link>
-            </div>
+            <NavigationMenu className="hidden sm:flex">
+              <NavigationMenuList className="gap-6">
+                <NavigationMenuItem>
+                  <Link href="/">
+                    <NavigationMenuLink className={cn(
+                      "group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50",
+                      location === '/' && "bg-accent/50"
+                    )}>
+                      Home
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Link href="/servers">
+                    <NavigationMenuLink className={cn(
+                      "group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50",
+                      location === '/servers' && "bg-accent/50"
+                    )}>
+                      Servers
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Link href="/add-server">
+                    <NavigationMenuLink className={cn(
+                      "group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50",
+                      location === '/add-server' && "bg-accent/50"
+                    )}>
+                      Add Server
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Link href="/about">
+                    <NavigationMenuLink className={cn(
+                      "group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50",
+                      location === '/about' && "bg-accent/50"
+                    )}>
+                      About
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-3">
             <ThemeToggle />
