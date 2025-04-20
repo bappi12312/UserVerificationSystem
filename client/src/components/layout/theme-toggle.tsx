@@ -15,7 +15,8 @@ export function ThemeToggle() {
           className="ml-2 rounded-full"
           aria-label="Toggle theme"
         >
-          {resolvedTheme === 'light' ? <Sun className="h-5 w-5 text-amber-500" /> : <Moon className="h-5 w-5 text-indigo-400" />}
+          {resolvedTheme === 'light' && <Sun className="h-5 w-5 text-amber-500" />}
+          {resolvedTheme === 'dark' && <Moon className="h-5 w-5 text-indigo-400" />}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
