@@ -35,23 +35,20 @@ export function ThemeProvider({
 
   useEffect(() => {
     const root = window.document.documentElement;
-    root.classList.remove("light", "dark");
 
-    let newTheme: "light" | "dark" = "light";
-    
+    const updateTheme = (newTheme: "light" | "dark") => {
+      root.classList.remove("light", "dark");
+      root.classList.add(newTheme);
+      setResolvedTheme(newTheme);
+      root.setAttribute("data-theme", newTheme);
+    };
+
     if (theme === "system") {
-      newTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
+      const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      updateTheme(isDark ? "dark" : "light");
     } else {
-      newTheme = theme as "light" | "dark";
+      updateTheme(theme as "light" | "dark");
     }
-    
-    setResolvedTheme(newTheme);
-    root.classList.add(newTheme);
-    
-    // Set a data attribute for components that need to reference the theme
-    root.setAttribute("data-theme", newTheme);
   }, [theme]);
 
   // Watch for system preference changes
